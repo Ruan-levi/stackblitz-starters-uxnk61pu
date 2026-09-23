@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskFlow Pro - Gerenciador de Tarefas Avançado</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <!-- FontAwesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Google Fonts Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .dark .glass-panel {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col justify-between"
+  >
+    <header
+      class="sticky top-0 z-40 w-full glass-panel border-b border-slate-200 dark:border-slate-800 shadow-sm"
+    >
+      <div
+        class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30"
+          >
+            <i class="fa-solid fa-list-check text-lg"></i>
+          </div>
+          <div>
+            <h1
+              class="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent"
+            >
+              TaskFlow Pro
+            </h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Produtividade Inteligente
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button
+            id="themeToggleBtn"
+            aria-label="Alternar Tema"
+            class="w-10 h-10 rounded-xl bg-slate-200/60 dark:bg-slate-800/80 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center justify-center transition-all duration-200 text-slate-600 dark:text-slate-300"
+          >
+            <i id="themeIcon" class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main
+      class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8"
+    >
+      <!-- DASHBOARD STATS -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div
+          class="glass-panel p-5 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-all"
+          ></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p
+                class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Total de Tarefas
+              </p>
+              <h3
+                id="statTotal"
+                class="text-3xl font-bold mt-1 text-slate-900 dark:text-white"
+              >
+                0
+              </h3>
+            </div>
+            <div
+              class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl"
+            >
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="glass-panel p-5 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"
+          ></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p
+                class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Pendentes
+              </p>
+              <h3
+                id="statPending"
+                class="text-3xl font-bold mt-1 text-slate-900 dark:text-white"
+              >
+                0
+              </h3>
+            </div>
+            <div
+              class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl"
+            >
+              <i class="fa-solid fa-clock"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="glass-panel p-5 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"
+          ></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p
+                class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Concluídas
+              </p>
+              <h3
+                id="statCompleted"
+                class="text-3xl font-bold mt-1 text-slate-900 dark:text-white"
+              >
+                0
+              </h3>
+            </div>
+            <div
+              class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl"
+            >
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="glass-panel p-5 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all"
+        >
+          <div
+            class="absolute -right-4 -bottom-4 w-20 h-20 bg-violet-500/10 rounded-full blur-xl group-hover:bg-violet-500/20 transition-all"
+          ></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p
+                class="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Taxa de Conclusão
+              </p>
+              <h3
+                id="statRate"
+                class="text-3xl font-bold mt-1 text-slate-900 dark:text-white"
+              >
+                0%
+              </h3>
+            </div>
+            <div
+              class="w-12 h-12 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xl"
+            >
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-panel p-6 rounded-2xl shadow-sm space-y-6">
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            <i
+              class="fa-solid fa-pen-to-square text-indigo-600 dark:text-indigo-400"
+            ></i>
+            <span id="formTitleText">Nova Tarefa</span>
+          </h2>
+          <div class="flex items-center gap-2">
+            <button
+              id="cancelEditBtn"
+              class="hidden px-4 py-2 text-sm font-medium rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+            >
+              Cancelar Edição
+            </button>
+          </div>
+        </div>
+
+        <!-- TASK FORM -->
+        <form id="taskForm" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <input type="hidden" id="taskId" />
+          <div class="md:col-span-5">
+            <label
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1"
+              >Título da Tarefa</label
+            >
+            <input
+              type="text"
+              id="taskTitle"
+              required
+              placeholder="Ex: Desenvolver nova landing page..."
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            />
+          </div>
+
+          <div class="md:col-span-2">
+            <label
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1"
+              >Categoria</label
+            >
+            <select
+              id="taskCategory"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            >
+              <option value="Trabalho">Trabalho</option>
+              <option value="Pessoal">Pessoal</option>
+              <option value="Estudos">Estudos</option>
+              <option value="Urgente">Urgente</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1"
+              >Prioridade</label
+            >
+            <select
+              id="taskPriority"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            >
+              <option value="Baixa">Baixa</option>
+              <option value="Média" selected>Média</option>
+              <option value="Alta">Alta</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-3">
+            <label
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1"
+              >Data de Vencimento</label
+            >
+            <input
+              type="date"
+              id="taskDueDate"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            />
+          </div>
+
+          <div class="md:col-span-12 flex justify-end mt-2">
+            <button
+              type="submit"
+              id="submitBtn"
+              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all text-sm flex items-center gap-2"
+            >
+              <i class="fa-solid fa-plus"></i> Adicionar Tarefa
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section
+        class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4"
+      >
+        <!-- Filter Tabs -->
+        <div
+          class="flex items-center p-1.5 glass-panel rounded-2xl gap-1 overflow-x-auto"
+        >
+          <button
+            data-filter="all"
+            class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm whitespace-nowrap"
+          >
+            Todas
+          </button>
+          <button
+            data-filter="pending"
+            class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 whitespace-nowrap"
+          >
+            Pendentes
+          </button>
+          <button
+            data-filter="completed"
+            class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 whitespace-nowrap"
+          >
+            Concluídas
+          </button>
+        </div>
+
+        <!-- Search and Sort Controls -->
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative w-full sm:w-64">
+            <i
+              class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+            ></i>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Buscar tarefas..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            />
+          </div>
+
+          <select
+            id="sortSelect"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+          >
+            <option value="date-desc">Mais Recentes</option>
+            <option value="date-asc">Mais Antigas</option>
+            <option value="priority">Prioridade</option>
+            <option value="due">Vencimento</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold">Lista de Tarefas</h3>
+          <button
+            id="clearCompletedBtn"
+            class="text-xs text-rose-500 hover:text-rose-600 font-medium transition flex items-center gap-1"
+          >
+            <i class="fa-solid fa-trash-can"></i> Limpar Concluídas
+          </button>
+        </div>
+
+        <div id="taskList" class="grid grid-cols-1 gap-3">
+          <!-- Dynamic Tasks Render Here -->
+        </div>
+
+        <!-- Empty State -->
+        <div
+          id="emptyState"
+          class="hidden flex-col items-center justify-center p-12 text-center glass-panel rounded-2xl"
+        >
+          <div
+            class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-2xl mb-4"
+          >
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <h4 class="font-bold text-base mb-1">Nenhuma tarefa encontrada</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
+            Adicione uma nova tarefa acima ou ajuste os filtros de busca para
+            visualizar seus itens.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="toast"
+      class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 glass-panel px-5 py-3 rounded-xl shadow-lg border border-indigo-500/20 flex items-center gap-3"
+    >
+      <div
+        id="toastIcon"
+        class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-500 flex items-center justify-center"
+      >
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div>
+        <h5 id="toastTitle" class="text-xs font-bold">Sucesso</h5>
+        <p id="toastMsg" class="text-xs text-slate-500 dark:text-slate-400">
+          Operação realizada com sucesso.
+        </p>
+      </div>
+    </div>
+
+    <footer
+      class="w-full border-t border-slate-200 dark:border-slate-800 py-6 mt-12 glass-panel text-center text-xs text-slate-500 dark:text-slate-400"
+    >
+      <p>
+        TaskFlow Pro &copy; 2026 - Desenvolvido com HTML, Tailwind CSS e Vanilla
+        JavaScript.
+      </p>
+    </footer>
+
+    <script>
+      // State Management
+      let tasks = JSON.parse(localStorage.getItem('taskflow_tasks')) || [
+        {
+          id: '1',
+          title: 'Configurar ambiente de desenvolvimento',
+          category: 'Trabalho',
+          priority: 'Alta',
+          dueDate: '2026-06-10',
+          completed: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          title: 'Comprar mantimentos para a semana',
+          category: 'Pessoal',
+          priority: 'Média',
+          dueDate: '2026-06-02',
+          completed: true,
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+        },
+        {
+          id: '3',
+          title: 'Estudar TypeScript avançado e Generics',
+          category: 'Estudos',
+          priority: 'Baixa',
+          dueDate: '2026-06-15',
+          completed: false,
+          createdAt: new Date(Date.now() - 172800000).toISOString(),
+        },
+      ];
+
+      let currentFilter = 'all';
+      let currentSearchQuery = '';
+      let currentSort = 'date-desc';
+      let isEditing = false;
+
+      // DOM Elements
+      const taskForm = document.getElementById('taskForm');
+      const taskIdInput = document.getElementById('taskId');
+      const taskTitleInput = document.getElementById('taskTitle');
+      const taskCategoryInput = document.getElementById('taskCategory');
+      const taskPriorityInput = document.getElementById('taskPriority');
+      const taskDueDateInput = document.getElementById('taskDueDate');
+      const submitBtn = document.getElementById('submitBtn');
+      const cancelEditBtn = document.getElementById('cancelEditBtn');
+      const formTitleText = document.getElementById('formTitleText');
+      const taskListContainer = document.getElementById('taskList');
+      const emptyState = document.getElementById('emptyState');
+      const searchInput = document.getElementById('searchInput');
+      const sortSelect = document.getElementById('sortSelect');
+      const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const themeIcon = document.getElementById('themeIcon');
+
+      // Stats Elements
+      const statTotal = document.getElementById('statTotal');
+      const statPending = document.getElementById('statPending');
+      const statCompleted = document.getElementById('statCompleted');
+      const statRate = document.getElementById('statRate');
+
+      // Toast element
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      // Initialize App
+      function init() {
+        setupTheme();
+        setupEventListeners();
+        render();
+      }
+
+      // Theme management
+      function setupTheme() {
+        const savedTheme = localStorage.getItem('taskflow_theme') || 'light';
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+          themeIcon.className = 'fa-solid fa-sun';
+        } else {
+          document.documentElement.classList.remove('dark');
+          themeIcon.className = 'fa-solid fa-moon';
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('taskflow_theme', isDark ? 'dark' : 'light');
+          themeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        });
+      }
+
+      // Event Listeners Setup
+      function setupEventListeners() {
+        taskForm.addEventListener('submit', handleFormSubmit);
+        cancelEditBtn.addEventListener('click', resetForm);
+        searchInput.addEventListener('input', (e) => {
+          currentSearchQuery = e.target.value.toLowerCase();
+          renderTasks();
+        });
+        sortSelect.addEventListener('change', (e) => {
+          currentSort = e.target.value;
+          renderTasks();
+        });
+        clearCompletedBtn.addEventListener('click', clearCompletedTasks);
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach((b) => {
+              b.className =
+                'filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 whitespace-nowrap';
+            });
+            e.target.className =
+              'filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm whitespace-nowrap';
+            currentFilter = e.target.getAttribute('data-filter');
+            renderTasks();
+          });
+        });
+      }
+
+      // Show Toast notification
+      function showToast(title, message, type = 'success') {
+        toastTitle.textContent = title;
+        toastMsg.textContent = message;
+
+        if (type === 'error') {
+          toastIcon.className =
+            'w-8 h-8 rounded-lg bg-rose-500/15 text-rose-500 flex items-center justify-center';
+          toastIcon.innerHTML =
+            '<i class="fa-solid fa-triangle-exclamation"></i>';
+        } else {
+          toastIcon.className =
+            'w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-500 flex items-center justify-center';
+          toastIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+        }
+
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+      }
+
+      // Form Submit Handler (Add or Update)
+      function handleFormSubmit(e) {
+        e.preventDefault();
+        const title = taskTitleInput.value.trim();
+        const category = taskCategoryInput.value;
+        const priority = taskPriorityInput.value;
+        const dueDate = taskDueDateInput.value;
+        const taskId = taskIdInput.value;
+
+        if (!title) return;
+
+        if (isEditing && taskId) {
+          // Update task
+          tasks = tasks.map((t) =>
+            t.id === taskId ? { ...t, title, category, priority, dueDate } : t
+          );
+          showToast('Atualizado!', 'A tarefa foi atualizada com sucesso.');
+        } else {
+          // Create new task
+          const newTask = {
+            id: Date.now().toString(),
+            title,
+            category,
+            priority,
+            dueDate: dueDate || new Date().toISOString().split('T')[0],
+            completed: false,
+            createdAt: new Date().toISOString(),
+          };
+          tasks.unshift(newTask);
+          showToast('Criado!', 'Nova tarefa adicionada com sucesso.');
+        }
+
+        saveTasks();
+        resetForm();
+        render();
+      }
+
+      // Reset Form
+      function resetForm() {
+        taskForm.reset();
+        taskIdInput.value = '';
+        isEditing = false;
+        formTitleText.textContent = 'Nova Tarefa';
+        submitBtn.innerHTML =
+          '<i class="fa-solid fa-plus"></i> Adicionar Tarefa';
+        cancelEditBtn.classList.add('hidden');
+      }
+
+      // Save to LocalStorage
+      function saveTasks() {
+        localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
+      }
+
+      // Toggle task completion status
+      window.toggleTask = function (id) {
+        tasks = tasks.map((t) =>
+          t.id === id ? { ...t, completed: !t.completed } : t
+        );
+        saveTasks();
+        render();
+        const task = tasks.find((t) => t.id === id);
+        if (task && task.completed) {
+          showToast('Parabéns!', 'Tarefa marcada como concluída.');
+        }
+      };
+
+      // Edit task preparation
+      window.editTask = function (id) {
+        const task = tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        taskIdInput.value = task.id;
+        taskTitleInput.value = task.title;
+        taskCategoryInput.value = task.category;
+        taskPriorityInput.value = task.priority;
+        taskDueDateInput.value = task.dueDate;
+
+        isEditing = true;
+        formTitleText.textContent = 'Editar Tarefa';
+        submitBtn.innerHTML =
+          '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+        cancelEditBtn.classList.remove('hidden');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Delete task
+      window.deleteTask = function (id) {
+        tasks = tasks.filter((t) => t.id !== id);
+        saveTasks();
+        render();
+        showToast('Removido', 'A tarefa foi excluída.', 'error');
+      };
+
+      // Clear completed tasks
+      function clearCompletedTasks() {
+        const completedCount = tasks.filter((t) => t.completed).length;
+        if (completedCount === 0) {
+          showToast(
+            'Aviso',
+            'Não há tarefas concluídas para remover.',
+            'error'
+          );
+          return;
+        }
+        tasks = tasks.filter((t) => !t.completed);
+        saveTasks();
+        render();
+        showToast(
+          'Limpeza Concluída',
+          `${completedCount} tarefas concluídas foram removidas.`
+        );
+      }
+
+      // Render everything
+      function render() {
+        renderStats();
+        renderTasks();
+      }
+
+      // Render Dashboard Stats
+      function renderStats() {
+        const total = tasks.length;
+        const completed = tasks.filter((t) => t.completed).length;
+        const pending = total - completed;
+        const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        statTotal.textContent = total;
+        statPending.textContent = pending;
+        statCompleted.textContent = completed;
+        statRate.textContent = `${rate}%`;
+      }
+
+      // Render Task List with Filters, Search and Sorting
+      function renderTasks() {
+        let filtered = tasks.filter((task) => {
+          // Filter tab
+          if (currentFilter === 'pending' && task.completed) return false;
+          if (currentFilter === 'completed' && !task.completed) return false;
+
+          // Search query
+          if (
+            currentSearchQuery &&
+            !task.title.toLowerCase().includes(currentSearchQuery) &&
+            !task.category.toLowerCase().includes(currentSearchQuery)
+          ) {
+            return false;
+          }
+          return true;
+        });
+
+        // Sorting
+        filtered.sort((a, b) => {
+          if (currentSort === 'date-desc') {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          } else if (currentSort === 'date-asc') {
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          } else if (currentSort === 'priority') {
+            const weight = { Alta: 3, Média: 2, Baixa: 1 };
+            return weight[b.priority] - weight[a.priority];
+          } else if (currentSort === 'due') {
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate) - new Date(b.dueDate);
+          }
+        });
+
+        taskListContainer.innerHTML = '';
+
+        if (filtered.length === 0) {
+          emptyState.classList.remove('hidden');
+          emptyState.classList.add('flex');
+          return;
+        } else {
+          emptyState.classList.remove('flex');
+          emptyState.classList.add('hidden');
+        }
+
+        filtered.forEach((task) => {
+          const isOverdue =
+            !task.completed &&
+            task.dueDate &&
+            new Date(task.dueDate) < new Date().setHours(0, 0, 0, 0);
+
+          // Category badge colors
+          const catColors = {
+            Trabalho:
+              'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+            Pessoal:
+              'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20',
+            Estudos:
+              'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+            Urgente:
+              'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+          };
+
+          // Priority badge colors
+          const prioColors = {
+            Alta: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
+            Média: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+            Baixa: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+          };
+
+          const card = document.createElement('div');
+          card.className = `glass-panel p-4 rounded-2xl shadow-sm transition-all animate-fade-in flex flex-col sm:flex-row sm:items-center justify-between gap-4 border ${
+            task.completed
+              ? 'opacity-70 border-emerald-500/20 bg-emerald-500/5'
+              : isOverdue
+              ? 'border-rose-500/30 bg-rose-500/5'
+              : 'border-slate-200/50 dark:border-slate-800/50'
+          }`;
+
+          card.innerHTML = `
+                    <div class="flex items-start sm:items-center gap-3.5">
+                        <button onclick="toggleTask('${
+                          task.id
+                        }')" aria-label="Marcar como concluída" class="mt-0.5 sm:mt-0 w-6 h-6 rounded-lg border-2 ${
+            task.completed
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500'
+          } flex items-center justify-center transition-all">
+                            ${
+                              task.completed
+                                ? '<i class="fa-solid fa-check text-xs"></i>'
+                                : ''
+                            }
+                        </button>
+                        <div>
+                            <h4 class="font-semibold text-sm sm:text-base ${
+                              task.completed
+                                ? 'line-through text-slate-400 dark:text-slate-500'
+                                : 'text-slate-800 dark:text-slate-100'
+                            }">${escapeHtml(task.title)}</h4>
+                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                  catColors[task.category] ||
+                                  'bg-slate-500/10 text-slate-600'
+                                }">
+                                    ${task.category}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md text-xs font-medium ${
+                                  prioColors[task.priority]
+                                }">
+                                    <i class="fa-solid fa-flag text-[10px] mr-1"></i> ${
+                                      task.priority
+                                    }
+                                </span>
+                                ${
+                                  task.dueDate
+                                    ? `
+                                    <span class="text-xs flex items-center gap-1 ${
+                                      isOverdue
+                                        ? 'text-rose-500 font-bold'
+                                        : 'text-slate-500 dark:text-slate-400'
+                                    }">
+                                        <i class="fa-regular fa-calendar"></i> ${formatDate(
+                                          task.dueDate
+                                        )} ${isOverdue ? '(Atrasada)' : ''}
+                                    </span>
+                                `
+                                    : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-200/50 dark:border-slate-800/50">
+                        <button onclick="editTask('${
+                          task.id
+                        }')" aria-label="Editar tarefa" class="w-9 h-9 rounded-xl bg-slate-200/50 dark:bg-slate-800 hover:bg-indigo-500 hover:text-white transition flex items-center justify-center text-slate-600 dark:text-slate-300 text-xs">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteTask('${
+                          task.id
+                        }')" aria-label="Excluir tarefa" class="w-9 h-9 rounded-xl bg-slate-200/50 dark:bg-slate-800 hover:bg-rose-500 hover:text-white transition flex items-center justify-center text-slate-600 dark:text-slate-300 text-xs">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+          taskListContainer.appendChild(card);
+        });
+      }
+
+      // Format Date string
+      function formatDate(dateString) {
+        if (!dateString) return '';
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return dateString;
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+
+      // Security Helper
+      function escapeHtml(str) {
+        return str.replace(
+          /[&<>'"]/g,
+          (tag) =>
+            ({
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              "'": '&#39;',
+              '"': '&quot;',
+            }[tag] || tag)
+        );
+      }
+
+      // Run on load
+      window.onload = init;
+    </script>
+  </body>
+</html>
